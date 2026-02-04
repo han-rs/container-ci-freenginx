@@ -12,7 +12,8 @@ podman build \
     -t ghcr.io/han-rs/container-ci-freenginx:prod
 
 # Install container service
-/bin/cp -f ./assets/template.container ~/.config/containers/systemd/freenginx.container
+mkdir -p ~/.config/containers/systemd
+cp -f ./assets/template.container ~/.config/containers/systemd/freenginx.container
 
 # Enable container service
 systemctl --user daemon-reload
