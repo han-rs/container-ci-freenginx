@@ -10,8 +10,6 @@ ARG GID
 ARG http_proxy=
 ARG https_proxy=
 
-ARG NAEREEN_NGINX_FANCYINDEX_THEME_COMMIT=ee2e73c8dd1584b84ddad0cfcc44fbd903bdccd8
-
 FROM alpine:${ALPINE_BASE_VERSION}@sha256:${ALPINE_BASE_HASH} AS user
 
 ARG UID
@@ -25,13 +23,7 @@ WORKDIR /tmp
 # Install openssl for dhparam generation
 RUN set -e \
     && \
-    apk -U upgrade && apk add --no-cache \
-    openssl=3.5.5-r0 \
-    git=2.52.0-r0
-
-# Dont warn about detached head state
-RUN set -e && \
-    git config --global advice.detachedHead false
+    apk -U upgrade && apk add --no-cache openssl=3.5.5-r0
 
 # Create non-root user and group and prepare passwd, group, shadow files
 RUN set -e \
@@ -54,19 +46,6 @@ RUN set -e \
     && \
     openssl dhparam -out /tmp/dhparam.pem 2048
 
-# Downloads Fancyindex theme
-RUN set -e \
-    && \
-    git clone --depth 1 --recurse-submodules -j8 https://github.com/Naereen/Nginx-Fancyindex-Theme
-
-ARG NAEREEN_NGINX_FANCYINDEX_THEME_COMMIT
-
-WORKDIR /tmp/Nginx-Fancyindex-Theme
-
-RUN set -e \
-    && \
-    git checkout "${NAEREEN_NGINX_FANCYINDEX_THEME_COMMIT}"
-
 FROM ghcr.io/han-rs/container-ci-freenginx:base AS base
 
 FROM scratch
@@ -75,10 +54,8 @@ ARG UID
 ARG GID
 
 COPY --from=user --chmod=644 /tmp/passwd /tmp/group /tmp/shadow /etc/
-
 COPY --from=base --chown="${UID}:${GID}" --chmod=775 /opt/nginx /opt/nginx
 COPY --from=user --chown="${UID}:${GID}" --chmod=775 /tmp/dhparam.pem /opt/nginx/conf/dhparam.pem
-COPY --from=user --chown="${UID}:${GID}" --chmod=775 /tmp/Nginx-Fancyindex-Theme/Nginx-Fancyindex /opt/nginx/conf/themes/fancyindex
 
 # If needed, modify nginx.conf and uncomment the following line
 COPY --chown="${UID}:${GID}" --chmod=775 ./conf /opt/nginx/conf
