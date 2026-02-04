@@ -1,0 +1,7 @@
+.github
+.git
+.gitignore
+build.sh
+*.container
+LICENSE
+README.md

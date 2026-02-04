@@ -1,0 +1,77 @@
+# Runtime build for rootless Podman
+
+ARG ALPINE_BASE_VERSION=3.23.3
+ARG ALPINE_BASE_HASH=25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
+
+ARG UID
+ARG GID
+
+# Proxy settings (if any)
+ARG http_proxy=
+ARG https_proxy=
+
+FROM alpine:${ALPINE_BASE_VERSION}@sha256:${ALPINE_BASE_HASH} AS user
+
+ARG UID
+ARG GID
+
+ARG http_proxy
+ARG https_proxy
+
+WORKDIR /tmp
+
+# Install openssl for dhparam generation
+RUN set -e \
+    && \
+    apk -U upgrade && apk add --no-cache openssl=3.5.5-r0
+
+# Create non-root user and group and prepare passwd, group, shadow files
+RUN set -e \
+    && \
+    addgroup --system --gid "${GID}" nginx \
+    && \
+    adduser --disabled-password --shell /bin/false --ingroup nginx --uid "${UID}" --no-create-home nginx \
+    && \
+    # Create temp directories for nginx with proper ownership
+    rm -rf /tmp/* \
+    && \
+    grep -E "(root|nginx)" /etc/passwd > /tmp/passwd \
+    && \
+    grep -E "(root|nginx)" /etc/group > /tmp/group \
+    && \
+    grep -E "(root|nginx)" /etc/shadow > /tmp/shadow 
+
+# Generate dhparam file.
+RUN set -e \
+    && \
+    openssl dhparam -out /tmp/dhparam.pem 2048
+
+FROM ghcr.io/han-rs/container-ci-freenginx:base AS base
+
+FROM scratch
+
+ARG UID
+ARG GID
+
+COPY --from=user --chmod=644 /tmp/passwd /tmp/group /tmp/shadow /etc/
+COPY --from=base --chown="${UID}:${GID}" --chmod=775 /opt/nginx /opt/nginx
+COPY --from=user --chown="${UID}:${GID}" --chmod=775 /tmp/dhparam.pem /opt/nginx/conf/dhparam.pem
+
+# If needed, modify nginx.conf and uncomment the following line
+COPY --chown="${UID}:${GID}" --chmod=775 ./conf /opt/nginx/conf
+
+# Health check for container orchestration
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=2 \
+    CMD ["/opt/nginx/sbin/nginx", "-qt"]
+
+# Use SIGQUIT for graceful shutdown with connection draining
+STOPSIGNAL SIGQUIT
+
+# Expose HTTP and HTTPS ports
+# EXPOSE 8080/tcp 8443/tcp 8443/udp
+
+# Run as non-root user.
+USER "${UID}:${GID}"
+
+# Start in foreground mode
+ENTRYPOINT ["/opt/nginx/sbin/nginx", "-g", "daemon off;"]
