@@ -22,6 +22,7 @@ fi
 # Parse arguments
 RESTART=${RESTART:-"false"}
 SKIP_EDIT=${SKIP_EDIT:-"false"}
+UPDATE_CONF=${UPDATE_CONF:-"false"}
 
 for arg in "$@"; do
     case $arg in
@@ -33,8 +34,66 @@ for arg in "$@"; do
             SKIP_EDIT="true"
             shift
             ;;
+        --update-conf)
+            UPDATE_CONF="true"
+            shift
+            ;;
     esac
 done
+
+# Handle --update-conf flag
+if [ "$UPDATE_CONF" = "true" ]; then
+    echo "Updating configuration files in container..."
+    
+    # Check if conf directory exists
+    if [ ! -d "./conf/conf.d" ]; then
+        echo "Error: ./conf/conf.d directory not found"
+        exit 1
+    fi
+    
+    if [ ! -f "./conf/nginx.conf" ]; then
+        echo "Error: ./conf/nginx.conf file not found"
+        exit 1
+    fi
+    
+    # Execute in podman unshare context
+    podman unshare sh -c '
+        set -e
+        echo "Mounting freenginx container..."
+        dir=$(podman mount freenginx)
+        
+        if [ -z "$dir" ]; then
+            echo "Error: Failed to mount container"
+            exit 1
+        fi
+        
+        echo "Container mounted at: $dir"
+        
+        # Create target directory if it does not exist
+        mkdir -p "$dir/opt/nginx/conf/conf.d"
+        
+        # Copy conf.d directory contents (preserve non-existing, overwrite existing)
+        echo "Copying conf.d directory..."
+        cp -rf ./conf/conf.d/* "$dir/opt/nginx/conf/conf.d/"
+        
+        # Copy nginx.conf file
+        echo "Copying nginx.conf..."
+        cp -f ./conf/nginx.conf "$dir/opt/nginx/conf/nginx.conf"
+        
+        echo "Unmounting container..."
+        podman unmount freenginx
+        
+        echo "Configuration files updated successfully!"
+    '
+
+    if [ $? -eq 0 ]; then
+        echo "Done! Reload the service to apply changes: systemctl --user reload freenginx"
+        exit 0
+    else
+        echo "Error: Failed to update configuration files"
+        exit 1
+    fi
+fi
 
 echo "Pulling base image..."
 if ! podman pull ghcr.io/han-rs/container-ci-freenginx:base; then
