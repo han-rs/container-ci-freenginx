@@ -13,6 +13,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  DOCKER_BUILDX_VERSION: "0.31.1"
+  DOCKER_BUILDKIT_VERSION: "0.27.1"
 
 jobs:
   build:
@@ -26,6 +28,12 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: v${{ env.DOCKER_BUILDX_VERSION }}
+          driver-opts: image=moby/buildkit:v${{ env.DOCKER_BUILDKIT_VERSION }}-rootless
 
       - name: Generate build date
         id: date
