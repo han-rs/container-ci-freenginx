@@ -8,17 +8,6 @@ if ! command -v podman >/dev/null 2>&1; then
     exit 1
 fi
 
-# Check if required files exist
-if [ ! -f "./Dockerfile.prod" ]; then
-    echo "Error: Dockerfile.prod not found"
-    exit 1
-fi
-
-if [ ! -f "./assets/template.container" ]; then
-    echo "Error: assets/template.container not found"
-    exit 1
-fi
-
 # Parse arguments
 RESTART=${RESTART:-"false"}
 SKIP_EDIT=${SKIP_EDIT:-"false"}
@@ -93,6 +82,17 @@ if [ "$UPDATE_CONF" = "true" ]; then
         echo "Error: Failed to update configuration files"
         exit 1
     fi
+fi
+
+# Check if required files exist
+if [ ! -f "./Dockerfile.prod" ]; then
+    echo "Error: Dockerfile.prod not found"
+    exit 1
+fi
+
+if [ ! -f "./assets/template.container" ]; then
+    echo "Error: assets/template.container not found"
+    exit 1
 fi
 
 echo "Pulling base image..."
