@@ -1,21 +1,31 @@
 [Unit]
-Description=Container service of freenginx
+Description=FreeNGINX Distroless Container Service
 RequiresMountsFor=%t/containers
 
 [Container]
-Image=ghcr.io/han-rs/container-ci-freenginx:prod
+# * Specify the name of the container.
 ContainerName=freenginx
-PodmanArgs=--userns=keep-id
+# * Specify the container image to use.
+Image=ghcr.io/han-rs/container-ci-freenginx:prod
+# * Run the container in user namespace mode with the current user's ID.
+# * Don't modify this field unless you know what you're doing.
+UserNS=keep-id
+# * Use the host's network stack for better performance.
 Network=host
-PublishPort=
-# For Podman v5.5 or higher
+# * Command to reload the containerized service.
+# * For Podman v5.4 or lower, use ExecReload instead of ReloadCmd.
 # ReloadCmd=/opt/nginx/sbin/nginx -s reload
+# * Mount a volume in the pod. This is equivalent to the Podman --volume option.
+# Volume=/host/dir:/container/dir
 
 [Service]
+# * Always restart the container if it stops.
 Restart=always
+# * Give the container more time to start.
 TimeoutStartSec=900
-# For Podman v5.4 or lower
+# * For Podman v5.4 or lower. See above.
 ExecReload=/usr/bin/podman exec freenginx /opt/nginx/sbin/nginx -s reload
 
 [Install]
+# * Enable the service to start at boot.
 WantedBy=default.target
