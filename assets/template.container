@@ -10,10 +10,14 @@ ContainerName=freenginx
 PodmanArgs=--userns=keep-id
 Network=host
 PublishPort=
+# For Podman v5.5 or higher
+# ReloadCmd=/opt/nginx/sbin/nginx -s reload
 
 [Service]
 Restart=always
 TimeoutStartSec=900
+# For Podman v5.4 or lower
+ExecReload=/usr/bin/podman exec freenginx /opt/nginx/sbin/nginx -s reload
 
 [Install]
 WantedBy=default.target
