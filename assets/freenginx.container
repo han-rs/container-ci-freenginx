@@ -16,6 +16,7 @@ Network=host
 # * For Podman v5.4 or lower, use ExecReload instead of ReloadCmd.
 # ReloadCmd=/opt/nginx/sbin/nginx -s reload
 # * Mount a volume in the pod. This is equivalent to the Podman --volume option.
+# Volume=cloudflared.volume:/cloudflared
 # Volume=/host/dir:/container/dir
 
 [Service]
