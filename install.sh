@@ -66,6 +66,9 @@ copy_unshare() {
 		exit 1
 	fi
 
+	# Convert to absolute path
+	src="$(realpath "$src")"
+
 	podman unshare sh -c "
 		set -e
 		dir=\$(podman mount freenginx)
