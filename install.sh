@@ -133,10 +133,10 @@ fi
 
 log_info "Pulling image..."
 
-# if ! podman pull ghcr.io/han-rs/container-ci-freenginx:latest; then
-# 	log_error "Error: Failed to pull image."
-# 	exit 1
-# fi
+if ! podman pull ghcr.io/han-rs/container-ci-freenginx:latest; then
+	log_error "Error: Failed to pull image."
+	exit 1
+fi
 
 if [ "$UPGRADE" = "true" ]; then
 	if [ "$FULL_UPGRADE" = "true" ]; then
