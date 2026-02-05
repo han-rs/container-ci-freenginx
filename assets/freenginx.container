@@ -6,17 +6,25 @@ RequiresMountsFor=%t/containers
 # * Specify the name of the container.
 ContainerName=freenginx
 # * Specify the container image to use.
-Image=ghcr.io/han-rs/container-ci-freenginx:prod
+Image=ghcr.io/han-rs/container-ci-freenginx:latest
+# * Automatically pull the latest image.
+AutoUpdate=registry
 # * Run the container in user namespace mode with the current user's ID.
+# *
 # * Don't modify this field unless you know what you're doing.
-UserNS=keep-id
+UserNS=keep-id:uid=65532,gid=65532
 # * Use the host's network stack for better performance.
 Network=host
-# * Command to reload the containerized service.
-# * For Podman v5.4 or lower, use ExecReload instead of ReloadCmd.
-# ReloadCmd=/opt/nginx/sbin/nginx -s reload
-# * Mount a volume in the pod. This is equivalent to the Podman --volume option.
-# Volume=cloudflared.volume:/cloudflared
+# * Publish ports from the container to the host.
+# *
+# * If Network=host is used, these options will be ignored.
+# * The format is [host_ip:]host_port:container_port[/protocol].
+# * Please set these according to what you configured.
+# PublishPort=80:80
+# PublishPort=443:443
+# PublishPort=443:443/udp
+# * Mount volumes.
+# Volume=cloudflared.volume:/opt/cloudflared/shared-volume
 # Volume=/host/dir:/container/dir
 
 [Service]
@@ -24,7 +32,7 @@ Network=host
 Restart=always
 # * Give the container more time to start.
 TimeoutStartSec=900
-# * For Podman v5.4 or lower. See above.
+# * For Podman v5.4 or lower.
 ExecReload=/usr/bin/podman exec freenginx /opt/nginx/sbin/nginx -s reload
 
 [Install]

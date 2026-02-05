@@ -1,5 +1,6 @@
 # Base Image Builder
 
+# Base image
 ARG ALPINE_BASE_VERSION=3.23.3
 ARG ALPINE_BASE_HASH=25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
 
@@ -18,12 +19,12 @@ ARG BROTLI_COMMIT=a71f9312c2deb28875acc7bacfdd5695a111aa53
 ARG NGX_FANCYINDEX_COMMIT=cbc0d3fca4f06414612de441399393d4b3bbb315
 
 # Non-root user and group IDs
-ARG UID=1001
-ARG GID=1001
+ARG UID=65532
+ARG GID=65532
 
 # Proxy settings (if any)
-ARG http_proxy=
-ARG https_proxy=
+ARG http_proxy=""
+ARG https_proxy=""
 
 # === Download Stage ===
 
@@ -34,6 +35,7 @@ ARG https_proxy
 
 RUN set -e && \
     apk -U upgrade && apk add --no-cache \
+    ca-certificates=20251003-r0 \
     git=2.52.0-r0
 
 # Dont warn about detached head state
@@ -269,11 +271,10 @@ RUN set -e && \
 RUN set -e && \
     mkdir -p /opt/nginx/temp
 
-# === Generate distroless image ===
+# === Package Stage ===
 
 FROM scratch
 
-ARG IMAGE_VERSION
 ARG IMAGE_BUILD_DATE
 ARG IMAGE_VCS_REF
 
@@ -282,14 +283,8 @@ ARG FREENGINX_VERSION
 ARG UID
 ARG GID
 
-# Copy minimal runtime dependencies from builder
-COPY --from=builder --chown="${UID}:${GID}" /opt/nginx /opt/nginx
-
-# Copy configuration files
-COPY --chown="${UID}:${GID}" --chmod=775 ./conf /opt/nginx/conf
-
 # OCI labels for image metadata
-LABEL description="FreeNGINX Distroless Base Image" \
+LABEL description="FreeNGINX Distroless Image" \
     org.opencontainers.image.created=${IMAGE_BUILD_DATE} \
     org.opencontainers.image.authors="Hantong Chen <public-service@7rs.net>" \
     org.opencontainers.image.url="https://github.com/han-rs/container-ci-freenginx" \
@@ -298,5 +293,22 @@ LABEL description="FreeNGINX Distroless Base Image" \
     org.opencontainers.image.version=${FREENGINX_VERSION}+image.${IMAGE_VCS_REF} \
     org.opencontainers.image.vendor="Hantong Chen" \
     org.opencontainers.image.licenses="BSD-2-Clause" \
-    org.opencontainers.image.title="FreeNGINX Distroless Base Image" \
-    org.opencontainers.image.description="FreeNGINX Distroless Base Image"
+    org.opencontainers.image.title="FreeNGINX Distroless Image" \
+    org.opencontainers.image.description="FreeNGINX Distroless Image"
+
+COPY --from=downloader /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder --chown="${UID}:${GID}" --chmod=775 /opt/nginx /opt/nginx
+COPY --chown="${UID}:${GID}" --chmod=775 ./conf /opt/nginx/conf
+
+# Health check for container orchestration
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=2 \
+    CMD ["/opt/nginx/sbin/nginx", "-qt"]
+
+# Use SIGQUIT for graceful shutdown with connection draining
+STOPSIGNAL SIGQUIT
+
+# Run as non-root user.
+USER "${UID}:${GID}"
+
+# Start in foreground mode
+ENTRYPOINT ["/opt/nginx/sbin/nginx", "-g", "daemon off;"]
