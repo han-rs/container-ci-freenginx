@@ -90,8 +90,8 @@ if [ ! -f "./Dockerfile.prod" ]; then
     exit 1
 fi
 
-if [ ! -f "./assets/template.container" ]; then
-    echo "Error: assets/template.container not found"
+if [ ! -f "./assets/freenginx.container" ]; then
+    echo "Error: assets/freenginx.container not found"
     exit 1
 fi
 
@@ -126,7 +126,7 @@ else
         cp ~/.config/containers/systemd/freenginx.container ~/.config/containers/systemd/freenginx.container.bak
     fi
 
-    cp -f ./assets/template.container ~/.config/containers/systemd/freenginx.container
+    cp -f ./assets/freenginx.container ~/.config/containers/systemd/freenginx.container
 
     # Edit if necessary (skip if --skip-edit is passed)
     if [ "$SKIP_EDIT" != "true" ]; then
