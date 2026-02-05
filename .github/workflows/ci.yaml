@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/workflows/ci.yaml'
       - 'conf/**'
-      - 'Dockerfile.base'
+      - 'Dockerfile'
   workflow_dispatch:
 
 env:
@@ -15,6 +15,15 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   DOCKER_BUILDX_VERSION: "0.31.1"
   DOCKER_BUILDKIT_VERSION: "0.27.1"
+  # Versions
+  # These versions should be kept in sync with the ones in Dockerfile.
+  FREENGINX_VERSION: "1.29.4"
+  FREENGINX_SUB_VERSION: "0"
+  OPENSSL_VERSION: "3.6.1"
+  PCRE_VERSION: "10.47"
+  ZLIB_COMMIT: "12731092979c6d07f42da27da673a9f6c7b13586"
+  BROTLI_COMMIT: "a71f9312c2deb28875acc7bacfdd5695a111aa53"
+  NGX_FANCYINDEX_COMMIT: "cbc0d3fca4f06414612de441399393d4b3bbb315"
 
 jobs:
   build:
@@ -57,12 +66,21 @@ jobs:
         with:
           provenance: false
           context: .
-          file: ./Dockerfile.base
+          file: ./Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FREENGINX_VERSION }}-b${{ env.FREENGINX_SUB_VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             IMAGE_BUILD_DATE=${{ env.IMAGE_BUILD_DATE }}
             IMAGE_VCS_REF=${{ env.IMAGE_VCS_REF }}
+            FREENGINX_VERSION=${{ env.FREENGINX_VERSION }}
+            FREENGINX_SUB_VERSION=${{ env.FREENGINX_SUB_VERSION }}
+            OPENSSL_VERSION=${{ env.OPENSSL_VERSION }}
+            PCRE_VERSION=${{ env.PCRE_VERSION }}
+            ZLIB_COMMIT=${{ env.ZLIB_COMMIT }}
+            BROTLI_COMMIT=${{ env.BROTLI_COMMIT }}
+            NGX_FANCYINDEX_COMMIT=${{ env.NGX_FANCYINDEX_COMMIT }}

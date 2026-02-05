@@ -8,10 +8,10 @@ ARG ALPINE_BASE_HASH=25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c
 ARG IMAGE_BUILD_DATE=1970-01-01T00:00:00+00:00
 ARG IMAGE_VCS_REF=00000000
 
-# The target FreeNGINX version to build
+# Versions
+# These versions should be kept in sync with the ones in .github/workflows/ci.yaml.
 ARG FREENGINX_VERSION=1.29.4
-
-# Dependencies versions
+ARG FREENGINX_SUB_VERSION=0
 ARG OPENSSL_VERSION=3.6.1
 ARG PCRE_VERSION=10.47
 ARG ZLIB_COMMIT=12731092979c6d07f42da27da673a9f6c7b13586
@@ -279,6 +279,7 @@ ARG IMAGE_BUILD_DATE
 ARG IMAGE_VCS_REF
 
 ARG FREENGINX_VERSION
+ARG FREENGINX_SUB_VERSION
 
 ARG UID
 ARG GID
@@ -290,7 +291,7 @@ LABEL description="FreeNGINX Distroless Image" \
     org.opencontainers.image.url="https://github.com/han-rs/container-ci-freenginx" \
     org.opencontainers.image.documentation="https://github.com/han-rs/container-ci-freenginx/blob/main/README.md" \
     org.opencontainers.image.source="https://github.com/han-rs/container-ci-freenginx" \
-    org.opencontainers.image.version=${FREENGINX_VERSION}+image.${IMAGE_VCS_REF} \
+    org.opencontainers.image.version=${FREENGINX_VERSION}-b${FREENGINX_SUB_VERSION}+image.${IMAGE_VCS_REF} \
     org.opencontainers.image.vendor="Hantong Chen" \
     org.opencontainers.image.licenses="BSD-2-Clause" \
     org.opencontainers.image.title="FreeNGINX Distroless Image" \
