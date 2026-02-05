@@ -4,7 +4,6 @@ ARG ALPINE_BASE_VERSION=3.23.3
 ARG ALPINE_BASE_HASH=25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
 
 # Image METADATA
-ARG IMAGE_VERSION=1
 ARG IMAGE_BUILD_DATE=1970-01-01T00:00:00+00:00
 ARG IMAGE_VCS_REF=00000000
 
@@ -18,13 +17,13 @@ ARG ZLIB_COMMIT=12731092979c6d07f42da27da673a9f6c7b13586
 ARG BROTLI_COMMIT=a71f9312c2deb28875acc7bacfdd5695a111aa53
 ARG NGX_FANCYINDEX_COMMIT=cbc0d3fca4f06414612de441399393d4b3bbb315
 
-# Proxy settings (if any)
-ARG http_proxy=
-ARG https_proxy=
-
 # Non-root user and group IDs
 ARG UID=1001
 ARG GID=1001
+
+# Proxy settings (if any)
+ARG http_proxy=
+ARG https_proxy=
 
 # === Download Stage ===
 
@@ -35,8 +34,7 @@ ARG https_proxy
 
 RUN set -e && \
     apk -U upgrade && apk add --no-cache \
-    git=2.52.0-r0 \
-    ca-certificates=20251003-r0
+    git=2.52.0-r0
 
 # Dont warn about detached head state
 RUN set -e && \
@@ -292,14 +290,13 @@ COPY --chown="${UID}:${GID}" --chmod=775 ./conf /opt/nginx/conf
 
 # OCI labels for image metadata
 LABEL description="FreeNGINX Distroless Base Image" \
-    maintainer="Hantong Chen <public-service@7rs.net>" \
-    org.opencontainers.image.description="FreeNGINX Distroless Base Image" \
-    org.opencontainers.image.authors="Hantong Chen" \
-    org.opencontainers.image.title="FreeNGINX Distroless Base Image" \
-    org.opencontainers.image.source="https://github.com/han-rs/container-ci-freenginx" \
     org.opencontainers.image.created=${IMAGE_BUILD_DATE} \
-    org.opencontainers.image.documentation="https://github.com/han-rs/container-ci-freenginx/blob/main/README.md" \
-    org.opencontainers.image.licenses="BSD-2-Clause" \
+    org.opencontainers.image.authors="Hantong Chen <public-service@7rs.net>" \
     org.opencontainers.image.url="https://github.com/han-rs/container-ci-freenginx" \
-    org.opencontainers.image.version=${FREENGINX_VERSION}-${IMAGE_VERSION} \
-    org.opencontainers.image.revision=${IMAGE_VCS_REF}
+    org.opencontainers.image.documentation="https://github.com/han-rs/container-ci-freenginx/blob/main/README.md" \
+    org.opencontainers.image.source="https://github.com/han-rs/container-ci-freenginx" \
+    org.opencontainers.image.version=${FREENGINX_VERSION}+image.${IMAGE_VCS_REF} \
+    org.opencontainers.image.vendor="Hantong Chen" \
+    org.opencontainers.image.licenses="BSD-2-Clause" \
+    org.opencontainers.image.title="FreeNGINX Distroless Base Image" \
+    org.opencontainers.image.description="FreeNGINX Distroless Base Image"
