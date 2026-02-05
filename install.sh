@@ -50,7 +50,8 @@ copy() {
 	# Check if config already exists
 	if [ -e "$dest" ]; then
 		log_warning "Warning: Existing ${dest} will be backed up"
-		mv -f "$dest" "${dest}.bak"
+		rm -rf "${dest}.bak"
+		mv "$dest" "${dest}.bak"
 	fi
 
 	cp -rf "$src" "$dest"
@@ -83,7 +84,8 @@ copy_unshare() {
 
 		# Backup existing file or directory if it exists
 		if [ -e \"\$dir${dest}\" ]; then
-			mv -f \"\$dir${dest}\" \"\$dir${dest}.bak\"
+			rm -rf \"\$dir${dest}.bak\"
+			mv \"\$dir${dest}\" \"\$dir${dest}.bak\"
 		fi
 
 		# Copy file or directory to container
