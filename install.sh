@@ -50,7 +50,7 @@ copy() {
 	# Check if config already exists
 	if [ -e "$dest" ]; then
 		log_warning "Warning: Existing ${dest} will be backed up"
-		cp -rf "$dest" "${dest}.bak"
+		mv -f "$dest" "${dest}.bak"
 	fi
 
 	cp -rf "$src" "$dest"
@@ -72,23 +72,23 @@ copy_unshare() {
 	podman unshare sh -c "
 		set -e
 		dir=\$(podman mount freenginx)
-		
+
 		if [ -z \"\$dir\" ]; then
 			echo 'Error: Failed to mount container'
 			exit 1
 		fi
-		
+
 		# Create target directory if it does not exist
 		mkdir -p \"\$(dirname \"\$dir${dest}\")\"
-		
+
 		# Backup existing file or directory if it exists
 		if [ -e \"\$dir${dest}\" ]; then
-			cp -rf \"\$dir${dest}\" \"\$dir${dest}.bak\"
+			mv -f \"\$dir${dest}\" \"\$dir${dest}.bak\"
 		fi
-		
+
 		# Copy file or directory to container
 		cp -rf \"${src}\" \"\$dir${dest}\"
-		
+
 		podman unmount freenginx
 	"
 
