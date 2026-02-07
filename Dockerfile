@@ -11,7 +11,7 @@ ARG IMAGE_VCS_REF=00000000
 # Versions
 # These versions should be kept in sync with the ones in .github/workflows/ci.yaml.
 ARG FREENGINX_VERSION=1.29.4
-ARG FREENGINX_SUB_VERSION=0
+ARG FREENGINX_SUB_VERSION=1
 ARG OPENSSL_VERSION=3.6.1
 ARG PCRE_VERSION=10.47
 ARG ZLIB_COMMIT=12731092979c6d07f42da27da673a9f6c7b13586
@@ -33,13 +33,17 @@ FROM alpine:${ALPINE_BASE_VERSION}@sha256:${ALPINE_BASE_HASH} AS downloader
 ARG http_proxy
 ARG https_proxy
 
-RUN set -e && \
-    apk -U upgrade && apk add --no-cache \
+RUN set -e \
+    && \
+    apk -U upgrade \
+    && \
+    apk add --no-cache \
     ca-certificates=20251003-r0 \
     git=2.52.0-r0
 
 # Dont warn about detached head state
-RUN set -e && \
+RUN set -e \
+    && \
     git config --global advice.detachedHead false
 
 # === Source code: openssl/openssl ===
@@ -48,7 +52,8 @@ WORKDIR /tmp
 
 ARG OPENSSL_VERSION
 
-RUN set -e && \
+RUN set -e \
+    && \
     git clone --depth 1 --recursive -j8 --single-branch -b "openssl-${OPENSSL_VERSION}" https://github.com/openssl/openssl
 
 # === Source code: PCRE2Project/pcre2 ===
@@ -57,7 +62,8 @@ WORKDIR /tmp
 
 ARG PCRE_VERSION
 
-RUN set -e && \
+RUN set -e \
+    && \
     git clone --depth 1 --recursive -j8 --single-branch -b "pcre2-${PCRE_VERSION}" https://github.com/PCRE2Project/pcre2
 
 # === Source code: zlib-ng/zlib-ng ===
@@ -148,8 +154,11 @@ COPY --from=downloader /tmp/ngx_brotli /tmp/ngx_brotli
 COPY --from=downloader /tmp/ngx-fancyindex /tmp/ngx-fancyindex
 COPY --from=downloader /tmp/nginx /tmp/nginx
 
-RUN set -e && \
-    apk -U upgrade && apk add --no-cache \
+RUN set -e \
+    && \
+    apk -U upgrade \
+    && \
+    apk add --no-cache \
     build-base=0.5-r3 \
     cmake=4.1.3-r0 \
     perl=5.42.0-r0 \
@@ -161,39 +170,49 @@ RUN set -e && \
 
 WORKDIR /tmp/zlib-ng
 
-RUN set -e && \
-    sed -i "s/compat=0/compat=1/" ./configure && \
-    ./configure --zlib-compat && \
-    make -j "$(nproc)" && \
+RUN set -e \
+    && \
+    sed -i "s/compat=0/compat=1/" ./configure\
+    && \
+    ./configure --zlib-compat\
+    && \
+    make -j "$(nproc)"\
+    && \
     make install
 
 # === Build: brotli ===
 
 WORKDIR /tmp/ngx_brotli
 
-RUN set -e && \
-    mkdir -p ./deps/brotli/out && \
+RUN set -e \
+    && \
+    mkdir -p ./deps/brotli/out\
+    && \
     cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_C_FLAGS="-m64 -march=x86-64 -mtune=generic -O3 -flto -funroll-loops -ffunction-sections -fdata-sections" \
     -DCMAKE_CXX_FLAGS="-m64 -march=x86-64 -mtune=generic -O3 -flto -funroll-loops -ffunction-sections -fdata-sections" \
     -DCMAKE_INSTALL_PREFIX=./installed \
     -B ./deps/brotli/out \
-    -S ./deps/brotli && \
+    -S ./deps/brotli\
+    && \
     cmake --build ./deps/brotli/out --config Release --target brotlienc
 
 # === Build: freenginx ===
 
 WORKDIR /tmp/nginx
 
-RUN set -e && \
+RUN set -e \
+    && \
     ./auto/configure \
     --with-debug \
-    --prefix="/opt/nginx" \
-    --http-client-body-temp-path="/opt/nginx/temp/http-client-body" \
-    --http-proxy-temp-path="/opt/nginx/temp/http-proxy" \
-    --http-fastcgi-temp-path="/opt/nginx/temp/http-fastcgi" \
-    --http-uwsgi-temp-path="/opt/nginx/temp/http-uwsgi" \
-    --http-scgi-temp-path="/opt/nginx/temp/http-scgi" \
+    --prefix="/opt/freenginx" \
+    --pid-path="/opt/freenginx/temp/nginx.pid" \
+    --lock-path="/opt/freenginx/temp/nginx.lock" \
+    --http-client-body-temp-path="/opt/freenginx/temp/http-client-body" \
+    --http-proxy-temp-path="/opt/freenginx/temp/http-proxy" \
+    --http-fastcgi-temp-path="/opt/freenginx/temp/http-fastcgi" \
+    --http-uwsgi-temp-path="/opt/freenginx/temp/http-uwsgi" \
+    --http-scgi-temp-path="/opt/freenginx/temp/http-scgi" \
     --with-openssl="/tmp/openssl" \
     --with-openssl-opt=" \
     enable-ec_nistp_64_gcc_128 \
@@ -258,18 +277,25 @@ RUN set -e && \
     --add-module="/tmp/ngx_brotli" \
     --add-module="/tmp/ngx-fancyindex"
 
-RUN set -e && \
-    make -j "$(nproc)" && \
-    make install && \
+RUN set -e \
+    && \
+    make -j "$(nproc)"\
+    && \
+    make install\
+    && \
     make clean
 
-RUN set -e && \
-    strip --strip-all /opt/nginx/sbin/nginx && \
-    ldd /opt/nginx/sbin/nginx || true && \
-    upx --best --lzma /opt/nginx/sbin/nginx
+RUN set -e \
+    && \
+    strip --strip-all /opt/freenginx/sbin/nginx \
+    && \
+    ldd /opt/freenginx/sbin/nginx || true \
+    && \
+    upx --best --lzma /opt/freenginx/sbin/nginx
 
-RUN set -e && \
-    mkdir -p /opt/nginx/temp
+RUN set -e \
+    && \
+    mkdir -p /opt/freenginx/temp
 
 # === Package Stage ===
 
@@ -297,13 +323,20 @@ LABEL description="FreeNGINX Distroless Image" \
     org.opencontainers.image.title="FreeNGINX Distroless Image" \
     org.opencontainers.image.description="FreeNGINX Distroless Image"
 
+COPY --from=builder --chown="${UID}:${GID}" --chmod=775 /opt/freenginx /opt/freenginx
 COPY --from=downloader /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder --chown="${UID}:${GID}" --chmod=775 /opt/nginx /opt/nginx
-COPY --chown="${UID}:${GID}" --chmod=775 ./conf /opt/nginx/conf
+
+# Fix possible CA issues due to OpenSSL
+ENV SSL_CERT_DIR=/etc/ssl/certs \
+    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
+# For testing purposes.
+COPY --chown="${UID}:${GID}" --chmod=775 ./assets/ssl/example.dhparam.pem /opt/freenginx/ssl/dhparam.pem
+COPY --chown="${UID}:${GID}" --chmod=775 ./assets/conf /opt/freenginx/conf
 
 # Health check for container orchestration
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=2 \
-    CMD ["/opt/nginx/sbin/nginx", "-qt"]
+    CMD ["/opt/freenginx/sbin/nginx", "-qt"]
 
 # Use SIGQUIT for graceful shutdown with connection draining
 STOPSIGNAL SIGQUIT
@@ -312,4 +345,4 @@ STOPSIGNAL SIGQUIT
 USER "${UID}:${GID}"
 
 # Start in foreground mode
-ENTRYPOINT ["/opt/nginx/sbin/nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/opt/freenginx/sbin/nginx", "-g", "daemon off;"]

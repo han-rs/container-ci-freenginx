@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - '.github/workflows/ci.yaml'
-      - 'conf/**'
+      - 'assets/conf/**'
       - 'Dockerfile'
   workflow_dispatch:
 
@@ -18,7 +18,7 @@ env:
   # Versions
   # These versions should be kept in sync with the ones in Dockerfile.
   FREENGINX_VERSION: "1.29.4"
-  FREENGINX_SUB_VERSION: "0"
+  FREENGINX_SUB_VERSION: "1"
   OPENSSL_VERSION: "3.6.1"
   PCRE_VERSION: "10.47"
   ZLIB_COMMIT: "12731092979c6d07f42da27da673a9f6c7b13586"

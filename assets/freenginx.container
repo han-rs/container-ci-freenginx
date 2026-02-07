@@ -23,8 +23,15 @@ Network=host
 # PublishPort=80:80
 # PublishPort=443:443
 # PublishPort=443:443/udp
-# * Mount volumes.
+# * Persists configuration files.
+Volume=%h/.local/share/freenginx/conf:/opt/freenginx/conf
+# * Persists logs.
+Volume=%h/.local/share/freenginx/logs:/opt/freenginx/logs
+# * Persists SSL stuffs.
+Volume=%h/.local/share/freenginx/ssl:/opt/freenginx/ssl
+# * Example of mounting a named volume.
 # Volume=cloudflared.volume:/opt/cloudflared/shared-volume
+# * Example of mounting a host directory.
 # Volume=/host/dir:/container/dir
 
 [Service]
@@ -32,8 +39,12 @@ Network=host
 Restart=always
 # * Give the container more time to start.
 TimeoutStartSec=900
-# * For Podman v5.4 or lower.
-ExecReload=/usr/bin/podman exec freenginx /opt/nginx/sbin/nginx -s reload
+# * Generate configuration extracting real IP from HTTP headers added by Cloudflare.
+#
+# * If you gate your servers behind Cloudflare, uncomment the following line.
+# ExecStartPre=%h/.local/share/freenginx/scripts/cloudflare-real-ip-helper.sh
+# * For Podman v5.4 or lower, we have to manually specify reload command.
+ExecReload=/usr/bin/podman exec freenginx /opt/freenginx/sbin/nginx -s reload
 
 [Install]
 # * Enable the service to start at boot.
