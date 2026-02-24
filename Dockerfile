@@ -88,7 +88,7 @@ WORKDIR /tmp
 
 RUN set -e \
     && \
-    git clone --depth 1 --recurse-submodules -j8 https://github.com/google/ngx_brotli
+    git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
 
 WORKDIR /tmp/ngx_brotli
 
@@ -104,7 +104,7 @@ WORKDIR /tmp
 
 RUN set -e \
     && \
-    git clone --depth 1 --recurse-submodules -j8 https://github.com/aperezdc/ngx-fancyindex
+    git clone --recurse-submodules -j8 https://github.com/aperezdc/ngx-fancyindex
 
 WORKDIR /tmp/ngx-fancyindex
 
