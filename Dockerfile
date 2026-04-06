@@ -10,7 +10,7 @@ ARG IMAGE_VCS_REF=00000000
 
 # Versions
 # These versions should be kept in sync with the ones in .github/workflows/ci.yaml.
-ARG FREENGINX_VERSION=1.29.6
+ARG FREENGINX_VERSION=1.29.7
 ARG FREENGINX_SUB_VERSION=0
 ARG OPENSSL_VERSION=3.6.1
 ARG PCRE_VERSION=10.47
