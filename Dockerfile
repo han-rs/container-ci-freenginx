@@ -161,7 +161,7 @@ RUN set -e \
     apk add --no-cache \
     build-base=0.5-r3 \
     cmake=4.1.3-r0 \
-    perl=5.42.0-r0 \
+    perl=5.42.2-r0 \
     mimalloc2-dev=2.2.3-r2 \
     linux-headers=6.16.12-r0 \
     upx=5.0.2-r0
