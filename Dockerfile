@@ -14,7 +14,7 @@ ARG FREENGINX_VERSION=1.29.6
 ARG FREENGINX_SUB_VERSION=0
 ARG OPENSSL_VERSION=3.6.1
 ARG PCRE_VERSION=10.47
-ARG ZLIB_COMMIT=12731092979c6d07f42da27da673a9f6c7b13586
+ARG ZLIB_VERSION=2.3.3
 ARG BROTLI_COMMIT=a71f9312c2deb28875acc7bacfdd5695a111aa53
 ARG NGX_FANCYINDEX_COMMIT=70311f239ec1e88ff79c669d126d08532ddb8554
 
@@ -70,17 +70,13 @@ RUN set -e \
 
 WORKDIR /tmp
 
+ARG ZLIB_VERSION
+
 RUN set -e \
     && \
-    git clone --depth 1 --recursive -j8 --single-branch -b stable https://github.com/zlib-ng/zlib-ng
+    git clone --depth 1 --recursive -j8 --single-branch -b "$ZLIB_VERSION" https://github.com/zlib-ng/zlib-ng
 
 WORKDIR /tmp/zlib-ng
-
-ARG ZLIB_COMMIT
-
-RUN set -e \
-    && \
-    git checkout "${ZLIB_COMMIT}"
 
 # === Source code: google/ngx_brotli ===
 
