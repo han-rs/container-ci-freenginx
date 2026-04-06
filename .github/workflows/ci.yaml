@@ -13,8 +13,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  DOCKER_BUILDX_VERSION: "0.31.1"
-  DOCKER_BUILDKIT_VERSION: "0.27.1"
+  DOCKER_BUILDX_VERSION: "0.33.0"
+  DOCKER_BUILDKIT_VERSION: "0.29.0"
   # Versions
   # These versions should be kept in sync with the ones in Dockerfile.
   FREENGINX_VERSION: "1.29.6"
@@ -39,7 +39,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
         with:
           version: v${{ env.DOCKER_BUILDX_VERSION }}
           driver-opts: image=moby/buildkit:v${{ env.DOCKER_BUILDKIT_VERSION }}-rootless
@@ -51,14 +51,14 @@ jobs:
           echo "IMAGE_VCS_REF=$(git rev-parse --short=8 HEAD)" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
           DOCKER_BUILD_CHECKS_ANNOTATIONS: false
