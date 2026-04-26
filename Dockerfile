@@ -10,8 +10,8 @@ ARG IMAGE_VCS_REF=00000000
 
 # Versions
 # These versions should be kept in sync with the ones in .github/workflows/ci.yaml.
-ARG FREENGINX_VERSION=1.29.7
-ARG FREENGINX_SUB_VERSION=1
+ARG FREENGINX_VERSION=1.30.0
+ARG FREENGINX_SUB_VERSION=0
 ARG OPENSSL_VERSION=3.6.2
 ARG PCRE_VERSION=10.47
 ARG ZLIB_VERSION=2.3.3
@@ -38,7 +38,7 @@ RUN set -e \
     apk -U upgrade \
     && \
     apk add --no-cache \
-    ca-certificates=20251003-r0 \
+    ca-certificates=20260413-r0 \
     git=2.52.0-r0
 
 # Dont warn about detached head state
