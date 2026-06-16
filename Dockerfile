@@ -1,8 +1,8 @@
 # Base Image Builder
 
 # Base image
-ARG ALPINE_BASE_VERSION=3.23.3
-ARG ALPINE_BASE_HASH=25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
+ARG ALPINE_BASE_VERSION=3.24.1
+ARG ALPINE_BASE_HASH=28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
 
 # Image METADATA
 ARG IMAGE_BUILD_DATE=1970-01-01T00:00:00+00:00
@@ -11,7 +11,7 @@ ARG IMAGE_VCS_REF=00000000
 # Versions
 # These versions should be kept in sync with the ones in .github/workflows/ci.yaml.
 ARG FREENGINX_VERSION=1.31.0
-ARG FREENGINX_SUB_VERSION=0
+ARG FREENGINX_SUB_VERSION=1
 ARG OPENSSL_VERSION=3.6.2
 ARG PCRE_VERSION=10.47
 ARG ZLIB_VERSION=2.3.3
@@ -38,8 +38,8 @@ RUN set -e \
     apk -U upgrade \
     && \
     apk add --no-cache \
-    ca-certificates=20260413-r0 \
-    git=2.52.0-r0
+    ca-certificates=20260611-r0 \
+    git=2.54.0-r0
 
 # Dont warn about detached head state
 RUN set -e \
@@ -155,12 +155,12 @@ RUN set -e \
     apk -U upgrade \
     && \
     apk add --no-cache \
-    build-base=0.5-r3 \
-    cmake=4.1.3-r0 \
+    build-base=0.5-r4 \
+    cmake=4.2.3-r0 \
     perl=5.42.2-r0 \
-    mimalloc2-dev=2.2.3-r2 \
-    linux-headers=6.16.12-r0 \
-    upx=5.0.2-r0
+    mimalloc2-dev=2.2.7-r0 \
+    linux-headers=7.0.0-r1 \
+    upx=5.2.0-r0
 
 # === Build: zlib-ng ===
 
